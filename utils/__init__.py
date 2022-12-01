@@ -1,5 +1,5 @@
 from itertools import islice, tee, zip_longest
-from typing import Callable, Generator, Iterable, List, Optional, Tuple, TypeVar
+from typing import Callable, Generator, List, Optional, Tuple, TypeVar, Iterator
 
 T = TypeVar("T")
 
@@ -33,15 +33,15 @@ def all_pairs(lst: List[T]) -> Generator[Tuple[T, T], None, None]:
                 yield (p1, p2)
 
 
-def take(iterable: Iterable[T], n: int) -> Generator[T, None, None]:
-    for item in islice(iterable, n):
+def take(iterator: Iterator[T], n: int) -> Generator[T, None, None]:
+    for item in islice(iterator, n):
         yield item
 
 
-def take_while(iterable: Iterable[T], check: Callable[[T], bool]):
+def take_while(iterator: Iterator[T], check: Callable[[T], bool]):
     try:
         while True:
-            item = next(iterable)  # type: ignore
+            item = next(iterator)
             if check(item):
                 yield item
             else:
@@ -51,17 +51,17 @@ def take_while(iterable: Iterable[T], check: Callable[[T], bool]):
 
 
 def chunks(
-    iterable: Iterable[T], chunk_size: int, fillvalue: Optional[T] = None
+    iterator: Iterator[T], chunk_size: int, fillvalue: Optional[T] = None
 ) -> Generator[Tuple[Optional[T], ...], None, None]:
-    args = [iter(iterable)] * chunk_size
+    args = [iter(iterator)] * chunk_size
     for chunk in zip_longest(*args, fillvalue=fillvalue):
         yield chunk
 
 
-def consume(iterable: Iterable) -> None:
-    [_ for _ in iterable]
+def consume(iterator: Iterator) -> None:
+    [_ for _ in iterator]
 
 
-def has_elements(iterable: Iterable) -> Tuple[bool, Iterable]:
-    iterable, copy = tee(iterable)
-    return any(True for _ in copy), iterable
+def has_elements(iterator: Iterator) -> Tuple[bool, Iterator]:
+    iterator, copy = tee(iterator)
+    return any(True for _ in copy), iterator
