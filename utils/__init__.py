@@ -1,5 +1,5 @@
 from itertools import islice, tee, zip_longest
-from typing import Callable, Generator, List, Optional, Tuple, TypeVar, Iterator
+from typing import Callable, Generator, Iterator, List, Optional, Tuple, TypeVar
 
 T = TypeVar("T")
 
@@ -51,8 +51,8 @@ def take_while(iterator: Iterator[T], check: Callable[[T], bool]):
 
 
 def chunks(
-    iterator: Iterator[T], chunk_size: int, fillvalue: Optional[T] = None
-) -> Generator[Tuple[Optional[T], ...], None, None]:
+    iterator: Iterator[T], chunk_size: int, fillvalue: T
+) -> Generator[Tuple[T, ...], None, None]:
     args = [iter(iterator)] * chunk_size
     for chunk in zip_longest(*args, fillvalue=fillvalue):
         yield chunk
