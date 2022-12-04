@@ -32,7 +32,22 @@ def part1(file_name: str):
     return count
 
 
+def is_overlapping(range1: Tuple[int, int], range2: Tuple[int, int]) -> bool:
+    (start1, end1) = range1
+    (start2, end2) = range2
+
+    return len(set(range(start1, end1 + 1)) & set(range(start2, end2 + 1))) > 0
+
+
+def part2(file_name: str):
+    count = 0
+    for line in file_lines(file_name):
+        if is_overlapping(*parse_assignment(line)):
+            count += 1
+    return count
+
+
 print(f"Part1 Sample: {part1('day4/sample')}")
 print(f"Part1: {part1('day4/input')}")
-# print(f"Part2 Sample: {part2('day4/sample')}")
-# print(f"Part2: {part2('day4/input')}")
+print(f"Part2 Sample: {part2('day4/sample')}")
+print(f"Part2: {part2('day4/input')}")
