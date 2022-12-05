@@ -22,8 +22,8 @@ def hex_to_bin_str(str: str) -> str:
 
 def file_lines(fn: str) -> Generator[str, None, None]:
     with open(fn, "rt") as f:
-        for line in f.readlines():
-            yield line.strip()
+        for line in f.read().splitlines():
+            yield line
 
 
 def all_pairs(lst: List[T]) -> Generator[Tuple[T, T], None, None]:
