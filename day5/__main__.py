@@ -41,14 +41,29 @@ def part1(file_name: str):
     for (count, from_index, to_index) in instructions(fl):
         perform_instruction(columns, count, from_index, to_index)
 
-    print(f"Columns: {''.join([c[-1] for c in columns])}")
+    return "".join([c[-1] for c in columns])
+
+
+def perform_instruction_2(
+    columns: List[List[str]], count: int, from_index: int, to_index: int
+) -> List[List[str]]:
+    moved_elems = columns[from_index - 1][-count:]
+    columns[from_index - 1] = columns[from_index - 1][:-count]
+    columns[to_index - 1] += moved_elems
+    return columns
 
 
 def part2(file_name: str):
-    pass
+    fl = file_lines(file_name)
+    columns = parse_initial_setup(fl)
+
+    for (count, from_index, to_index) in instructions(fl):
+        perform_instruction_2(columns, count, from_index, to_index)
+
+    return "".join([c[-1] for c in columns])
 
 
 print(f"Part1 Sample: {part1('day5/sample')}")
 print(f"Part1: {part1('day5/input')}")
-# print(f"Part2 Sample: {part2('day5/sample')}")
-# print(f"Part2: {part2('day5/input')}")
+print(f"Part2 Sample: {part2('day5/sample')}")
+print(f"Part2: {part2('day5/input')}")
