@@ -1,4 +1,4 @@
-from typing import Iterator, List, Tuple
+from typing import Iterator, List
 
 from utils import chunks, file_lines, take_while
 
