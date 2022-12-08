@@ -109,3 +109,19 @@ def rows(matrix: List[List[T]]) -> Generator[List[T], None, None]:
 def cols(matrix: List[List[T]]) -> Generator[List[T], None, None]:
     for col in range(len(matrix[0])):
         yield [row[col] for row in matrix]
+
+
+def left_of(matrix: List[List[T]], row: int, col: int) -> List[T]:
+    return list(reversed(matrix[row][:col]))
+
+
+def right_of(matrix: List[List[T]], row: int, col: int) -> List[T]:
+    return matrix[row][col + 1 :]
+
+
+def up_of(matrix: List[List[T]], row: int, col: int) -> List[T]:
+    return list(reversed([rw[col] for rw in matrix[:row]]))
+
+
+def down_of(matrix: List[List[T]], row: int, col: int) -> List[T]:
+    return [rw[col] for rw in matrix[row + 1 :]]

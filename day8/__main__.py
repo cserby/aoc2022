@@ -2,7 +2,17 @@ from functools import reduce
 from typing import List
 
 from utils import file_lines
-from utils.matrix import cols, matrix_of_size, matrix_to_str, read_matrix, rows
+from utils.matrix import (
+    cols,
+    down_of,
+    indices,
+    left_of,
+    matrix_of_size,
+    read_matrix,
+    right_of,
+    rows,
+    up_of,
+)
 
 
 def visible_in_line(line: List[int]) -> List[bool]:
@@ -64,11 +74,48 @@ def part1(fn: str):
     return sum_bool_matrix(visible)
 
 
+def viewing_distance(line_of_sight: List[int], height: int):
+    los = 0
+    for e in line_of_sight:
+        if e < height:
+            los += 1
+        else:
+            los += 1
+            return los
+    return los
+
+
+def scenic_score(forest: List[List[int]], row: int, col: int) -> int:
+    height = forest[row][col]
+    return (
+        viewing_distance(left_of(forest, row, col), height)
+        * viewing_distance(right_of(forest, row, col), height)
+        * viewing_distance(up_of(forest, row, col), height)
+        * viewing_distance(down_of(forest, row, col), height)
+    )
+
+
+def scenic_scores(forest: List[List[int]]):
+    return [
+        [scenic_score(forest, row, col) for col in range(len(forest[0]))]
+        for row in range(len(forest))
+    ]
+
+
 def part2(fn: str):
-    pass
+    forest = read_matrix(file_lines(fn), int)
+
+    prev_max = None
+
+    for (row, col) in indices(forest):
+        curr = scenic_score(forest, row, col)
+        if prev_max is None or curr > prev_max:
+            prev_max = curr
+
+    return prev_max
 
 
 print(f"Part1 Sample: {part1('day8/sample')}")
 print(f"Part1: {part1('day8/input')}")
-# print(f"Part2 Sample: {part2('day8/sample')}")
-# print(f"Part2: {part2('day8/input')}")
+print(f"Part2 Sample: {part2('day8/sample')}")
+print(f"Part2: {part2('day8/input')}")
