@@ -50,6 +50,19 @@ def take_while(iterator: Iterator[T], check: Callable[[T], bool]):
         pass
 
 
+def match_into_chunks(
+    iterator: Iterator[T], match: Callable[[T], bool]
+) -> Generator[List[T], None, None]:
+    chunk = [next(iterator)]
+    for elem in iterator:
+        if match(elem):
+            yield chunk
+            chunk = [elem]
+        else:
+            chunk.append(elem)
+    yield chunk
+
+
 def chunks(
     iterator: Iterator[T], chunk_size: int, fillvalue: T
 ) -> Generator[Tuple[T, ...], None, None]:
