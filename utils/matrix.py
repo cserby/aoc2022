@@ -1,6 +1,14 @@
-from typing import Any, Generator, List, Optional, Tuple, TypeVar
+from typing import Any, Callable, Generator, Iterator, List, Optional, Tuple, TypeVar
 
 T = TypeVar("T")
+
+
+def matrix_of_size(rows: int, cols: int, cell_contents: T) -> List[List[T]]:
+    return [[cell_contents for _ in range(cols)] for _ in range(rows)]
+
+
+def read_matrix(lines: Iterator[str], transform: Callable[[str], T]) -> List[List[T]]:
+    return [[transform(c) for c in l] for l in lines]
 
 
 def indices(matrix: List[List[Any]]) -> Generator[Tuple[int, int], None, None]:
@@ -91,3 +99,29 @@ def local_minimum_indices(
     for (x, y) in indices(matrix):
         if is_cell_local_minimum(matrix, x, y):
             yield (x, y)
+
+
+def rows(matrix: List[List[T]]) -> Generator[List[T], None, None]:
+    for row in matrix:
+        yield row
+
+
+def cols(matrix: List[List[T]]) -> Generator[List[T], None, None]:
+    for col in range(len(matrix[0])):
+        yield [row[col] for row in matrix]
+
+
+def left_of(matrix: List[List[T]], row: int, col: int) -> List[T]:
+    return list(reversed(matrix[row][:col]))
+
+
+def right_of(matrix: List[List[T]], row: int, col: int) -> List[T]:
+    return matrix[row][col + 1 :]
+
+
+def up_of(matrix: List[List[T]], row: int, col: int) -> List[T]:
+    return list(reversed([rw[col] for rw in matrix[:row]]))
+
+
+def down_of(matrix: List[List[T]], row: int, col: int) -> List[T]:
+    return [rw[col] for rw in matrix[row + 1 :]]
