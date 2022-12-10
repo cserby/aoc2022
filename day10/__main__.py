@@ -1,4 +1,4 @@
-from typing import Iterator
+from typing import Generator, Iterator
 
 from utils import file_lines
 
@@ -25,13 +25,23 @@ def part1(fn: str):
     return sum(i * states[i - 1] for i in interesting)
 
 
+def crt(cat_ray: Generator[int, None, None]):
+    out = ""
+    for _ in range(6):
+        for x in range(40):
+            sprite_center = next(cat_ray)
+            out += "#" if sprite_center - 1 <= x <= sprite_center + 1 else "."
+        out += "\n"
+    return out
+
+
 def part2(fn: str):
-    pass
+    print(crt(cathode_ray(file_lines(fn))))
 
 
 # print(f"Part1 Sample: {part1('day10/sample')}")
 print(f"Part1 Sample2: {part1('day10/sample2')}")
 print(f"Part1: {part1('day10/input')}")
 # print(f"Part2 Sample: {part2('day10/sample')}")
-# print(f"Part2 Sample2: {part2('day10/sample2')}")
-# print(f"Part2: {part2('day10/input')}")
+print(f"Part2 Sample2: {part2('day10/sample2')}")
+print(f"Part2: {part2('day10/input')}")
