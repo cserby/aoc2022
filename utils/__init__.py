@@ -1,5 +1,5 @@
 from itertools import islice, tee, zip_longest
-from typing import Callable, Generator, Iterator, List, Tuple, TypeVar, Dict
+from typing import Callable, Dict, Generator, Iterator, List, Tuple, TypeVar
 
 T = TypeVar("T")
 
@@ -51,13 +51,13 @@ def take_while(iterator: Iterator[T], check: Callable[[T], bool]):
 
 
 def match_into_chunks(
-    iterator: Iterator[T], match: Callable[[T], bool]
+    iterator: Iterator[T], match: Callable[[T], bool], return_match: bool = True
 ) -> Generator[List[T], None, None]:
     chunk = [next(iterator)]
     for elem in iterator:
         if match(elem):
             yield chunk
-            chunk = [elem]
+            chunk = [elem] if return_match else []
         else:
             chunk.append(elem)
     yield chunk
