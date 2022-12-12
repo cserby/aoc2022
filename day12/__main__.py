@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Set, Tuple
 
 from utils import file_lines
 from utils.matrix import (
@@ -86,10 +86,35 @@ def part1(fn: str):
 
 
 def part2(fn: str):
-    pass
+    height_map = read_matrix(file_lines(fn), lambda s: s)
+
+    start_coords: Set[Tuple[int, int]] = set()
+    end_coords: Optional[Tuple[int, int]] = None
+
+    for (x, y) in indices(height_map):
+        cell = cell_value(height_map, x, y)
+        if cell == "S" or cell == "a":
+            start_coords.add((x, y))
+        elif cell == "E":
+            end_coords = (x, y)
+
+    assert start_coords is not None
+    assert end_coords is not None
+
+    distances = shortest_path(height_map, end_coords)
+    return min(
+        [
+            dist
+            for dist in [
+                cell_value(distances, start_coord[0], start_coord[1])
+                for start_coord in start_coords
+            ]
+            if dist is not None and dist != -1
+        ]
+    )
 
 
 print(f"Part1 Sample: {part1('day12/sample')}")
 print(f"Part1: {part1('day12/input')}")
-# print(f"Part2 Sample: {part2('day12/sample')}")
-# print(f"Part2: {part2('day12/input')}")
+print(f"Part2 Sample: {part2('day12/sample')}")
+print(f"Part2: {part2('day12/input')}")
