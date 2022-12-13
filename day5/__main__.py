@@ -1,11 +1,11 @@
-from typing import Iterator, List
+from typing import Generator, Iterator, List, Tuple
 
 from utils import chunks, file_lines, take_while
 
 
 def parse_initial_setup(file_lines: Iterator[str]) -> List[List[str]]:
     initial_setup = reversed(list(take_while(file_lines, lambda l: l != "")))
-    number_of_columns = [int(chk[1]) for chk in chunks(next(initial_setup), 4, " ")][-1]
+    number_of_columns = [int(chk[1]) for chk in chunks(next(initial_setup), 4, " ")][-1]  # type: ignore
     columns: List[List[str]] = [[] for _ in range(number_of_columns)]
     for line in initial_setup:
         row = chunks(iter(line), 4, " ")
@@ -15,7 +15,9 @@ def parse_initial_setup(file_lines: Iterator[str]) -> List[List[str]]:
     return columns
 
 
-def instructions(instruction_lines: Iterator[str]):
+def instructions(
+    instruction_lines: Iterator[str],
+) -> Generator[Tuple[int, int, int], None, None]:
     instructions = list(instruction_lines)
     for instruction in instructions:
         [move, count, frm, from_index, to, to_index] = instruction.split(" ")
@@ -34,7 +36,7 @@ def perform_instruction(
     return columns
 
 
-def part1(file_name: str):
+def part1(file_name: str) -> str:
     fl = file_lines(file_name)
     columns = parse_initial_setup(fl)
 
@@ -53,7 +55,7 @@ def perform_instruction_2(
     return columns
 
 
-def part2(file_name: str):
+def part2(file_name: str) -> str:
     fl = file_lines(file_name)
     columns = parse_initial_setup(fl)
 

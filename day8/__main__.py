@@ -68,13 +68,13 @@ def visible_in_forest(forest: List[List[int]]) -> List[List[bool]]:
     )
 
 
-def part1(fn: str):
+def part1(fn: str) -> int:
     forest = read_matrix(file_lines(fn), int)
     visible = visible_in_forest(forest)
     return sum_bool_matrix(visible)
 
 
-def viewing_distance(line_of_sight: List[int], height: int):
+def viewing_distance(line_of_sight: List[int], height: int) -> int:
     los = 0
     for e in line_of_sight:
         if e < height:
@@ -95,14 +95,14 @@ def scenic_score(forest: List[List[int]], row: int, col: int) -> int:
     )
 
 
-def scenic_scores(forest: List[List[int]]):
+def scenic_scores(forest: List[List[int]]) -> List[List[int]]:
     return [
         [scenic_score(forest, row, col) for col in range(len(forest[0]))]
         for row in range(len(forest))
     ]
 
 
-def part2(fn: str):
+def part2(fn: str) -> int:
     forest = read_matrix(file_lines(fn), int)
 
     prev_max = None
@@ -111,6 +111,8 @@ def part2(fn: str):
         curr = scenic_score(forest, row, col)
         if prev_max is None or curr > prev_max:
             prev_max = curr
+
+    assert prev_max is not None
 
     return prev_max
 

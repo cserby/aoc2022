@@ -58,7 +58,7 @@ def compare(left: StrangeNumber, right: StrangeNumber) -> int:
                     assert False, f"Should never get here, both left and right are None"
 
 
-def sum_indices_of_pairs_in_correct_order(fn: str):
+def sum_indices_of_pairs_in_correct_order(fn: str) -> int:
     return sum(
         index + 1
         for (index, (left, right)) in enumerate(pairs(fn))
@@ -66,11 +66,11 @@ def sum_indices_of_pairs_in_correct_order(fn: str):
     )
 
 
-def part1(fn: str):
+def part1(fn: str) -> int:
     return sum_indices_of_pairs_in_correct_order(fn)
 
 
-def part2(fn: str):
+def part2(fn: str) -> int:
     divider_2: StrangeNumber = [[2]]
     divider_6: StrangeNumber = [[6]]
     sorted_strange_nums: List[StrangeNumber] = sorted(

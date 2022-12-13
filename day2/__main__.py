@@ -1,12 +1,14 @@
+from typing import Generator, List
+
 from utils import file_lines
 
 
-def parsed_lines(fn: str):
+def parsed_lines(fn: str) -> Generator[List[str], None, None]:
     for line in file_lines(fn):
         yield line.split(" ")
 
 
-def value_of_my_shape(me):
+def value_of_my_shape(me: str) -> int:
     if me == "X":
         return 1
     elif me == "Y":
@@ -17,7 +19,7 @@ def value_of_my_shape(me):
         raise Exception(f"Me: {me}")
 
 
-def outcome_of_round(opponent, me):
+def outcome_of_round(opponent: str, me: str) -> int:
     results = {
         "A": {  # Rock
             "X": 3,  # Rock -> Draw
@@ -38,11 +40,11 @@ def outcome_of_round(opponent, me):
     return results[opponent][me]
 
 
-def score_round(opponent: str, me: str):
+def score_round(opponent: str, me: str) -> int:
     return value_of_my_shape(me) + outcome_of_round(opponent, me)
 
 
-def part1(fn: str):
+def part1(fn: str) -> int:
     return sum(score_round(opponent, me) for opponent, me in parsed_lines(fn))
 
 
@@ -50,7 +52,7 @@ print(f"Part2 Sample: {part1('day2/sample')}")
 print(f"Part2: {part1('day2/input')}")
 
 
-def select_shape(opponent: str, outcome: str):
+def select_shape(opponent: str, outcome: str) -> str:
     shape = {
         "A": {  # Rock
             "X": "Z",  # Scissors -> Lose
@@ -71,7 +73,7 @@ def select_shape(opponent: str, outcome: str):
     return shape[opponent][outcome]
 
 
-def part2(fn: str):
+def part2(fn: str) -> int:
     return sum(
         score_round(opponent, select_shape(opponent, outcome))
         for opponent, outcome in parsed_lines(fn)

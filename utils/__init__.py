@@ -1,5 +1,5 @@
 from itertools import islice, tee, zip_longest
-from typing import Callable, Dict, Generator, Iterator, List, Tuple, TypeVar
+from typing import Any, Callable, Dict, Generator, Iterator, List, Tuple, TypeVar
 
 T = TypeVar("T")
 
@@ -38,7 +38,9 @@ def take(iterator: Iterator[T], n: int) -> Generator[T, None, None]:
         yield item
 
 
-def take_while(iterator: Iterator[T], check: Callable[[T], bool]):
+def take_while(
+    iterator: Iterator[T], check: Callable[[T], bool]
+) -> Generator[T, None, None]:
     try:
         while True:
             item = next(iterator)
@@ -71,11 +73,11 @@ def chunks(
         yield chunk
 
 
-def consume(iterator: Iterator) -> None:
+def consume(iterator: Iterator[Any]) -> None:
     [_ for _ in iterator]
 
 
-def has_elements(iterator: Iterator) -> Tuple[bool, Iterator]:
+def has_elements(iterator: Iterator[T]) -> Tuple[bool, Iterator[T]]:
     iterator, copy = tee(iterator)
     return any(True for _ in copy), iterator
 

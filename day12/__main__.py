@@ -65,7 +65,7 @@ def shortest_path(
     return distances
 
 
-def part1(fn: str):
+def part1(fn: str) -> int:
     height_map = read_matrix(file_lines(fn), lambda s: s)
 
     start_coords: Optional[Tuple[int, int]] = None
@@ -82,10 +82,12 @@ def part1(fn: str):
     assert end_coords is not None
 
     distances = shortest_path(height_map, end_coords)
-    return cell_value(distances, start_coords[0], start_coords[1])
+    c_v = cell_value(distances, start_coords[0], start_coords[1])
+    assert c_v is not None
+    return c_v
 
 
-def part2(fn: str):
+def part2(fn: str) -> int:
     height_map = read_matrix(file_lines(fn), lambda s: s)
 
     start_coords: Set[Tuple[int, int]] = set()

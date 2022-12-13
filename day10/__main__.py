@@ -3,7 +3,7 @@ from typing import Generator, Iterator
 from utils import file_lines
 
 
-def cathode_ray(instructions: Iterator[str]):
+def cathode_ray(instructions: Iterator[str]) -> Generator[int, None, None]:
     x = 1
     for instruction in instructions:
         if instruction.startswith("addx"):
@@ -18,14 +18,14 @@ def cathode_ray(instructions: Iterator[str]):
     yield x
 
 
-def part1(fn: str):
+def part1(fn: str) -> int:
     interesting = [20, 60, 100, 140, 180, 220]
     cat_ray = cathode_ray(file_lines(fn))
     states = list(cat_ray)
     return sum(i * states[i - 1] for i in interesting)
 
 
-def crt(cat_ray: Generator[int, None, None]):
+def crt(cat_ray: Generator[int, None, None]) -> str:
     out = ""
     for _ in range(6):
         for x in range(40):
@@ -35,8 +35,8 @@ def crt(cat_ray: Generator[int, None, None]):
     return out
 
 
-def part2(fn: str):
-    print(crt(cathode_ray(file_lines(fn))))
+def part2(fn: str) -> str:
+    return crt(cathode_ray(file_lines(fn)))
 
 
 # print(f"Part1 Sample: {part1('day10/sample')}")

@@ -20,11 +20,11 @@ def sum_inventories(inventories: Iterator[List[int]]) -> Generator[int, None, No
         yield reduce(lambda prev, curr: prev + curr, inventory, 0)
 
 
-def part1(input_fn: str):
+def part1(input_fn: str) -> int:
     return max(sum_inventories(split_inventories(file_lines(input_fn))))
 
 
-def part2(input_fn: str):
+def part2(input_fn: str) -> int:
     return sum(
         sorted(sum_inventories(split_inventories(file_lines(input_fn))), reverse=True)[
             0:3

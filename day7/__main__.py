@@ -71,13 +71,13 @@ def small_dirs(
             yield (dir, size)
 
 
-def part1(file_name: str):
+def part1(file_name: str) -> int:
     return sum(
         size for sd, size in small_dirs(directory_structure(file_lines(file_name)))
     )
 
 
-def print_tree(dir: Directory, indent: int = 0, recursive: bool = True):
+def print_tree(dir: Directory, indent: int = 0, recursive: bool = True) -> None:
     print((" " * indent) + f"- {dir.name} (size: {size(dir)})")
     for file in dir.files.values():
         print((" " * (indent + 2)) + f"| {file.name} (size: {file.size})")
@@ -88,7 +88,7 @@ def print_tree(dir: Directory, indent: int = 0, recursive: bool = True):
             print((" " * (indent + 2)) + f"- {dir.name} (size: {size(dir)})")
 
 
-def part2(file_name: str):
+def part2(file_name: str) -> int:
     total_size = 70000000
     total_needed = 30000000
 
@@ -102,6 +102,8 @@ def part2(file_name: str):
     for (dir, s) in sorted(dir_sizes(root), key=lambda e: e[1]):
         if s >= needed:
             return s
+
+    assert False, "No directory of the necessary size found"
 
 
 print(f"Part1 Sample: {part1('day7/sample')}")
