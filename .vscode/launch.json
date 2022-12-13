@@ -17,6 +17,13 @@
             "request": "launch",
             "module": "day9",
             "justMyCode": true
+        },
+        {
+            "name": "Day13",
+            "type": "python",
+            "request": "launch",
+            "module": "day13",
+            "justMyCode": true
         }
     ]
 }
