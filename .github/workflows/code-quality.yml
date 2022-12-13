@@ -1,0 +1,16 @@
+name: Checks
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Checks
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.10
+    - run: pip install --upgrade pipenv
+    - run: pipenv install --dev
+    - run: pipenv run black --diff --check $(git ls-files '*.py')
+    - run: pipenv run mypy --strict $(git ls-files '*.py')
