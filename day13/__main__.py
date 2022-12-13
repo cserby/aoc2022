@@ -2,6 +2,7 @@ from itertools import zip_longest
 from typing import Generator, List, Tuple
 
 from utils import file_lines, match_into_chunks
+from functools import cmp_to_key
 
 StrangeNumber = int | List["StrangeNumber"] | None
 
@@ -70,10 +71,22 @@ def part1(fn: str):
 
 
 def part2(fn: str):
-    pass
+    divider_2: StrangeNumber = [[2]]
+    divider_6: StrangeNumber = [[6]]
+    sorted_strange_nums: List[StrangeNumber] = sorted(
+        [eval(l) for l in file_lines(fn) if l != ""]
+        + [
+            divider_2,
+            divider_6,
+        ],
+        key=cmp_to_key(compare),
+    )
+    return (sorted_strange_nums.index(divider_2) + 1) * (
+        sorted_strange_nums.index(divider_6) + 1
+    )
 
 
 print(f"Part1 Sample: {part1('day13/sample')}")
 print(f"Part1: {part1('day13/input')}")
-# print(f"Part2 Sample: {part2('day13/sample')}")
-# print(f"Part2: {part2('day13/input')}")
+print(f"Part2 Sample: {part2('day13/sample')}")
+print(f"Part2: {part2('day13/input')}")
