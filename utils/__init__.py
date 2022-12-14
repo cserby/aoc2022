@@ -80,21 +80,3 @@ def consume(iterator: Iterator[Any]) -> None:
 def has_elements(iterator: Iterator[T]) -> Tuple[bool, Iterator[T]]:
     iterator, copy = tee(iterator)
     return any(True for _ in copy), iterator
-
-
-def draw_coordinates(coords: Dict[Tuple[int, int], str]) -> str:
-    min_x = min(coords.keys(), key=lambda p: p[0])[0]
-    max_x = max(coords.keys(), key=lambda p: p[0])[0]
-    min_y = min(coords.keys(), key=lambda p: p[1])[1]
-    max_y = max(coords.keys(), key=lambda p: p[1])[1]
-
-    print(f"Coords: {coords}, max_x: {max_x}, min_x: {min_x}")
-    out = ""
-
-    for x in range(max_x, min_x - 1, -1):
-        for y in range(min_y, max_y + 1):
-            coord = coords.get((x, y), None)
-            out += coord if coord is not None else "."
-        out += "\n"
-
-    return out

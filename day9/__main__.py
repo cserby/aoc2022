@@ -1,6 +1,8 @@
 from typing import Dict, Generator, Set, Tuple
 
-from utils import draw_coordinates, file_lines
+from utils import file_lines
+
+# from utils.geometry import draw_coordinates
 
 
 def move_tail(head_pos: Tuple[int, int], tail_pos: Tuple[int, int]) -> Tuple[int, int]:
