@@ -1,17 +1,21 @@
+from typing import List
+
 from utils import file_lines
 
 
-def start_of_packet_marker_end_index(input: str, packet_length: int = 4):
+def start_of_packet_marker_end_index(input: str, packet_length: int = 4) -> int:
     for i in range(packet_length - 1, len(input)):
         if len(set(input[i - (packet_length - 1) : i + 1])) == packet_length:
             return i + 1
 
+    assert False, "Start of packet marker not present"
 
-def part1(file_name: str):
+
+def part1(file_name: str) -> List[int]:
     return [start_of_packet_marker_end_index(input) for input in file_lines(file_name)]
 
 
-def part2(file_name: str):
+def part2(file_name: str) -> List[int]:
     return [
         start_of_packet_marker_end_index(input, packet_length=14)
         for input in file_lines(file_name)

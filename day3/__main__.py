@@ -1,19 +1,19 @@
 from functools import reduce
-from typing import List
+from typing import List, Set, Tuple
 
 from utils import chunks, file_lines
 
 
-def split_in_half(line: str):
+def split_in_half(line: str) -> Tuple[str, str]:
     length = len(line)
     return line[: int(length / 2)], line[int(length / 2) :]
 
 
-def to_ord_set(comp: str):
+def to_ord_set(comp: str) -> Set[int]:
     return {ord(ch) for ch in comp}
 
 
-def find_common(compartments: List[str]):
+def find_common(compartments: List[str]) -> Set[int]:
     assert len(compartments) >= 2
     return reduce(
         lambda prev, curr: prev & to_ord_set(curr),
@@ -22,14 +22,14 @@ def find_common(compartments: List[str]):
     )
 
 
-def ord_to_prio(ord: int):
+def ord_to_prio(ord: int) -> int:
     if 97 <= ord <= 122:
         return ord - 96
     else:
         return ord - 38
 
 
-def part1(fn: str):
+def part1(fn: str) -> int:
     return sum(
         [
             ord_to_prio(find_common(list(split_in_half(line))).pop())
@@ -38,7 +38,7 @@ def part1(fn: str):
     )
 
 
-def part2(fn: str):
+def part2(fn: str) -> int:
     return sum(
         [
             ord_to_prio(find_common(list(group)).pop())

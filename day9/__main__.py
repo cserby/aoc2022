@@ -41,7 +41,7 @@ def rope_head_segment() -> Generator[
         tail_pos = move_tail(head_pos, tail_pos)
 
 
-def part1(fn: str):
+def part1(fn: str) -> int:
     gen = rope_head_segment()
     tail_pos = next(gen)[1]
     tail_poss = {tail_pos}
@@ -64,7 +64,7 @@ def rope_segment() -> Generator[
         tail_pos = move_tail(head_pos, tail_pos)
 
 
-def part2(fn: str):
+def part2(fn: str) -> int:
     head = rope_head_segment()
     next(head)
     segments = [rope_segment() for i in range(9)]

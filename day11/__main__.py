@@ -5,7 +5,7 @@ from typing import Callable, List
 from utils import file_lines, match_into_chunks
 
 
-def drop_prefix(line: str, prefix: str):
+def drop_prefix(line: str, prefix: str) -> str:
     assert line.startswith(prefix)
     return line[len(prefix) :]
 
@@ -21,7 +21,7 @@ def parse_items(line: str) -> List[int]:
 
 
 def parse_operation(line: str) -> Callable[[int], int]:
-    return eval(drop_prefix(line, "  Operation: ").replace("new =", "lambda old:"))
+    return eval(drop_prefix(line, "  Operation: ").replace("new =", "lambda old:"))  # type: ignore
 
 
 def parse_divisor(line: str) -> int:
@@ -72,7 +72,7 @@ def parse_monkey(lines: List[str]) -> Monkey:
     )
 
 
-def print_round(i: int, monkeys: List[Monkey]):
+def print_round(i: int, monkeys: List[Monkey]) -> None:
     print(f"After round {i}, the monkeys are holding items with these worry levels:")
     for index, monkey in enumerate(monkeys):
         print(f"Monkey {index}: {len(monkey.items)}")
@@ -97,11 +97,11 @@ def monkey_business(fn: str, rounds: int, dampen: bool) -> int:
     return math.prod(top_inspecteds)
 
 
-def part1(fn: str):
+def part1(fn: str) -> int:
     return monkey_business(fn, rounds=20, dampen=True)
 
 
-def part2(fn: str):
+def part2(fn: str) -> int:
     return monkey_business(fn, rounds=10000, dampen=False)
 
 
