@@ -1,9 +1,9 @@
-from typing import Generator, Iterator, List
+import cProfile
+from functools import reduce
+from typing import Generator, Iterator, List, Optional, Set
 
 from utils import file_lines
 from utils.geometry import HorizontalOrVerticalLine, Point, draw_coordinates
-
-import cProfile
 
 
 def lines(lines: Iterator[str]) -> Generator[HorizontalOrVerticalLine, None, None]:
@@ -15,7 +15,7 @@ def lines(lines: Iterator[str]) -> Generator[HorizontalOrVerticalLine, None, Non
             )
 
 
-class CantMoveFurtherException(Exception):
+class InletBlockedException(Exception):
     pass
 
 
@@ -24,13 +24,25 @@ class FellIntoAbyssException(Exception):
 
 
 def collision(
-    new_sand: Point, lines: List[HorizontalOrVerticalLine], sands: List[Point]
+    new_sand: Point,
+    line_points: Set[Point],
+    sands: Set[Point],
+    bottom: Optional[int] = None,
 ) -> bool:
-    return any(new_sand == p for p in sands) or any(l.online(new_sand) for l in lines)
+    if new_sand.y == bottom:
+        return True
+    if new_sand in sands:
+        return True
+    if new_sand in line_points:
+        return True
+    return False
 
 
 def drop_sand(
-    lines: List[HorizontalOrVerticalLine], sands: List[Point], lowest: int
+    line_points: Set[Point],
+    sands: Set[Point],
+    lowest: int,
+    bottom: Optional[int] = None,
 ) -> Point:
     sand = Point(500, 0)
     while sand.y < lowest:
@@ -38,14 +50,17 @@ def drop_sand(
 
         new_sand = sand.move(dy=1)
 
-        if collision(new_sand, lines, sands):
+        if collision(new_sand, line_points, sands, bottom):
             new_sand = sand.move(dx=-1, dy=1)
 
-            if collision(new_sand, lines, sands):
+            if collision(new_sand, line_points, sands, bottom):
                 new_sand = sand.move(dx=1, dy=1)
 
-                if collision(new_sand, lines, sands):
-                    return sand
+                if collision(new_sand, line_points, sands, bottom):
+                    if sand == Point(500, 0):
+                        raise InletBlockedException(sand)
+                    else:
+                        return sand
 
         sand = new_sand
 
@@ -53,40 +68,51 @@ def drop_sand(
 
 
 def lowest_point(lines: List[HorizontalOrVerticalLine]) -> int:
-    return max(max(l.end1.y, l.end2.y) for l in lines)
+    return max(l.high.y for l in lines)
 
 
-def draw_pit(lines: List[HorizontalOrVerticalLine], sands: List[Point]) -> str:
+def draw_pit(line_points: Set[Point], sands: Set[Point]) -> str:
     return draw_coordinates(
         points={
             **{
                 Point(500, 0): "+",
             },
             **{sand: "s" for sand in sands},
+            **{lp: "#" for lp in line_points},
         },
-        lines=lines,
     )
 
 
 def part1(fn: str) -> int:
     ls = list(lines(file_lines(fn)))
     lowest = lowest_point(ls)
-    sands: List[Point] = []
+    line_points: Set[Point] = reduce(lambda prev, curr: prev | curr.points(), ls, set())
+    sands: Set[Point] = set()
 
     try:
         while True:
-            sands.insert(0, drop_sand(ls, sands, lowest))
+            sands.add(drop_sand(line_points, sands, lowest))
     except FellIntoAbyssException:
-        print(draw_pit(ls, sands))
+        print(draw_pit(line_points, sands))
         return len(sands)
 
 
 def part2(fn: str) -> int:
-    raise NotImplementedError()
+    ls = list(lines(file_lines(fn)))
+    lowest = lowest_point(ls)
+    line_points: Set[Point] = reduce(lambda prev, curr: prev | curr.points(), ls, set())
+    sands: Set[Point] = set()
+
+    try:
+        while True:
+            sands.add(drop_sand(line_points, sands, lowest + 3, bottom=lowest + 2))
+    except InletBlockedException:
+        print(draw_pit(line_points, sands))
+        return len(sands) + 1
 
 
-cProfile.run("part1('day14/input')")
-# print(f"Part1 Sample: {part1('day14/sample')}")
-# print(f"Part1: {part1('day14/input')}")
-# print(f"Part2 Sample: {part2('day14/sample')}")
-# print(f"Part2: {part2('day14/input')}")
+# cProfile.run("part1('day14/input')")
+print(f"Part1 Sample: {part1('day14/sample')}")
+print(f"Part1: {part1('day14/input')}")
+print(f"Part2 Sample: {part2('day14/sample')}")
+print(f"Part2: {part2('day14/input')}")
