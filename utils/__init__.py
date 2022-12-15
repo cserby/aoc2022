@@ -33,6 +33,12 @@ def all_pairs(lst: List[T]) -> Generator[Tuple[T, T], None, None]:
                 yield (p1, p2)
 
 
+def all_pairs_order_invariant(lst: List[T]) -> Generator[Tuple[T, T], None, None]:
+    for idx, p1 in enumerate(lst):
+        for p2 in lst[idx:]:
+            yield (p1, p2)
+
+
 def take(iterator: Iterator[T], n: int) -> Generator[T, None, None]:
     for item in islice(iterator, n):
         yield item
