@@ -1,5 +1,5 @@
 import re
-from typing import Generator, List, Optional, Set, Tuple
+from typing import Generator, Iterator, List, Optional, Set, Tuple
 
 from utils import file_lines
 from utils.geometry import Point
@@ -42,7 +42,7 @@ def merge_ordered_sections(
 ) -> Tuple[int, int]:
     (first_low, first_high) = first
     (second_low, second_high) = second
-    if second_low <= second_high:
+    if second_low <= first_high:
         return (first_low, max(first_high, second_high))
     else:
         raise NotMergeableException(first, second)
@@ -53,7 +53,7 @@ def merge_excludeds(
 ) -> Generator[Tuple[int, int], None, None]:
     it = iter(sorted(excludeds))
     curr = next(it)
-    for nxt in excludeds:
+    for nxt in it:
         try:
             curr = merge_ordered_sections(curr, nxt)
         except NotMergeableException:
@@ -72,16 +72,55 @@ def part1(fn: str) -> int:
         excluded = find_excluded_spots(sensor, closest, Y)
         if excluded is not None:
             excludeds += [excluded]
-    return sum(excl_high - excl_low + 1 for excl_low, excl_high in merge_excludeds(excludeds)) - beacons_on_line(
-        beacons, Y
-    )
+    return sum(
+        excl_high - excl_low + 1 for excl_low, excl_high in merge_excludeds(excludeds)
+    ) - beacons_on_line(beacons, Y)
+
+
+def parse_lines(fn: str) -> Generator[Tuple[Point, Point], None, None]:
+    for l in file_lines(fn):
+        yield parse(l)
+
+
+def available_spot_x(excludeds: Iterator[Tuple[int, int]], max_x: int) -> Optional[int]:
+    for (low, high) in excludeds:
+        if high < 0:
+            continue
+        elif low > max_x:
+            return None
+        elif high < max_x:
+            return high + 1
+        elif low > 0:
+            return low - 1
+        else:
+            continue
+    return None
 
 
 def part2(fn: str) -> int:
-    raise NotImplementedError()
+    max_coord = 20 if fn.endswith("sample") else 4000000
+
+    sensors = {(sensor, beacon) for (sensor, beacon) in parse_lines(fn)}
+
+    for y in range(0, max_coord + 1):
+        excludeds = merge_excludeds(
+            [
+                i
+                for i in [
+                    find_excluded_spots(sensor, beacon, y)
+                    for (sensor, beacon) in sensors
+                ]
+                if i is not None
+            ]
+        )
+        spot = available_spot_x(excludeds, max_coord + 1)
+        if spot is not None:
+            return spot * 4000000 + y
+
+    assert False, "No available spot found"
 
 
 print(f"Part1 Sample: {part1('day15/sample')}")
 print(f"Part1: {part1('day15/input')}")
-# print(f"Part2 Sample: {part2('day15/sample')}")
-# print(f"Part2: {part2('day15/input')}")
+print(f"Part2 Sample: {part2('day15/sample')}")
+print(f"Part2: {part2('day15/input')}")
