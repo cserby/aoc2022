@@ -8,16 +8,11 @@ from utils import file_lines
 from utils.matrix import matrix_of_size, matrix_to_str
 
 
-@dataclass
-class Valve:
-    id: str
-    flow_rate: int
-    tunnels_to: List[str]
-    on: bool = False
+def parse_cave(fn: str) -> Tuple[Dict[str, int], Dict[str, bool], Dict[str, List[str]]]:
+    flow_rate: Dict[str, int] = {}
+    valve_on: Dict[str, bool] = {}
+    connections: Dict[str, List[str]] = {}
 
-
-def parse_cave(fn: str) -> Dict[str, Valve]:
-    caves: Dict[str, Valve] = {}
     for line in file_lines(fn):
         m = re.search(
             r"^Valve (..) has flow rate=([0-9]+); tunnels? leads? to valves? (.*)$",
@@ -25,17 +20,21 @@ def parse_cave(fn: str) -> Dict[str, Valve]:
         )
         assert m is not None, f"Failed to parse: {line}"
         valve_id = m.group(1)
-        flow_rate = int(m.group(2))
-        tunnels_to = [t.strip() for t in m.group(3).split(",")]
-        assert valve_id not in caves.keys()
-        caves[valve_id] = Valve(valve_id, flow_rate, tunnels_to)
-    return caves
+        assert valve_id not in flow_rate.keys()
+        assert valve_id not in valve_on.keys()
+        assert valve_id not in connections.keys()
+
+        flow_rate[valve_id] = int(m.group(2))
+        connections[valve_id] = [t.strip() for t in m.group(3).split(",")]
+        valve_on[valve_id] = False
+
+    return (flow_rate, valve_on, connections)
 
 
-def distances(cave: Dict[str, Valve]) -> Dict[str, Dict[str, int]]:
+def distances(connections: Dict[str, List[str]]) -> Dict[str, Dict[str, int]]:
     # https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
 
-    vertices = list(sorted(cave.keys()))
+    vertices = list(sorted(connections.keys()))
     dsts = matrix_of_size(len(vertices), len(vertices), math.inf)
 
     # for each vertex v do
@@ -46,7 +45,7 @@ def distances(cave: Dict[str, Valve]) -> Dict[str, Dict[str, int]]:
     # for each edge (u, v) do
     #    dist[u][v] ← w(u, v)  // The weight of the edge (u, v)
     for indx, vert in enumerate(vertices):
-        for other in cave[vert].tunnels_to:
+        for other in connections[vert]:
             dsts[indx][vertices.index(other)] = 1
 
     # for k from 1 to |V|
@@ -71,56 +70,54 @@ def distances(cave: Dict[str, Valve]) -> Dict[str, Dict[str, int]]:
     }
 
 
-def release_from_valve(valve: Valve, time_left: int):
-    return valve.flow_rate * time_left if not valve.on else 0
-
-
 def visit(
-    valve: Valve,
-    valves: Dict[str, Valve],
+    position: str,
+    flow_rate: Dict[str, int],
+    valve_on: Dict[str, bool],
     distances: Dict[str, Dict[str, int]],
     released_so_far: int = 0,
     time_left: int = 30,
     indent: int = 0,
 ) -> int:
-#    print(" " * indent + f"{valve.id} IN (time_left = {time_left})")
+    #    print(" " * indent + f"{valve.id} IN (time_left = {time_left})")
     new_time_left = time_left
     new_released_so_far = released_so_far
 
-    if valve.flow_rate > 0:
-#        print(" " * indent + f"{valve.id} VISIT")
+    if flow_rate[position] > 0:
+        #        print(" " * indent + f"{valve.id} VISIT")
         # open valve
         new_time_left -= 1
-        curr_release = release_from_valve(valve, new_time_left)
-#        print(
-#            " " * indent
-#            + f"{valve.id} will release {curr_release} until time runs out in {new_time_left}"
-#        )
+        assert not valve_on[position]
+        curr_release = (flow_rate[position] * new_time_left)
+        #        print(
+        #            " " * indent
+        #            + f"{valve.id} will release {curr_release} until time runs out in {new_time_left}"
+        #        )
         new_released_so_far += curr_release
-        valve.on = True
+        valve_on[position] = True
 
     max_release = None
-    for new_valve in [
+    for new_position in [
         possible_new_valve
-        for possible_new_valve in distances[valve.id].keys()
+        for possible_new_valve in distances[position].keys()
         if (
-            valves[possible_new_valve].flow_rate > 0
-            and (not valves[possible_new_valve].on)
-            and distances[valve.id][possible_new_valve] + 1 <= new_time_left
+            flow_rate[possible_new_valve] > 0
+            and (not valve_on[possible_new_valve])
+            and distances[position][possible_new_valve] + 1 <= new_time_left
         )
     ]:
-#        print(
-#            " " * indent
-#            + f"{valve.id} TRAVERSE TO {new_valve} in {distances[valve.id][new_valve]}"
-#        )
+        #        print(
+        #            " " * indent
+        #            + f"{valve.id} TRAVERSE TO {new_valve} in {distances[valve.id][new_valve]}"
+        #        )
 
-        new_valves = copy.deepcopy(valves)
         max_release_if_we_go_this_way = visit(
-            new_valves[new_valve],
-            new_valves,
+            new_position,
+            flow_rate,
+            copy.deepcopy(valve_on),
             distances,
             0,
-            new_time_left - distances[valve.id][new_valve],
+            new_time_left - distances[position][new_position],
             indent + 2,
         )
         if max_release is None or max_release_if_we_go_this_way > max_release:
@@ -128,17 +125,17 @@ def visit(
     if max_release is not None:
         new_released_so_far += max_release
 
-#    print(" " * indent + f"{valve.id} EXIT ({new_released_so_far})")
+    #    print(" " * indent + f"{valve.id} EXIT ({new_released_so_far})")
     return new_released_so_far
 
 
 def part1(fn: str) -> int:
-    valves = parse_cave(fn)
-    dsts = distances(valves)
+    (flow_rate, valve_on, connections) = parse_cave(fn)
+    dsts = distances(connections)
 
-    #print(dsts)
+    # print(dsts)
 
-    return visit(valves["AA"], valves, dsts)
+    return visit("AA", flow_rate, valve_on, dsts)
 
 
 def part2(fn: str) -> int:
