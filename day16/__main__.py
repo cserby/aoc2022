@@ -30,7 +30,7 @@ def parse_cave(fn: str) -> Tuple[Dict[str, int], Dict[str, bool], Dict[str, List
     return (flow_rate, valve_on, connections)
 
 
-def distances(connections: Dict[str, List[str]]) -> Dict[str, Dict[str, int]]:
+def distances(connections: Dict[str, List[str]], flow_rate: Dict[str, int]) -> Dict[str, Dict[str, int]]:
     # https://en.wikipedia.org/wiki/Floyd%E2%80%93Warshall_algorithm
 
     vertices = list(sorted(connections.keys()))
@@ -63,7 +63,7 @@ def distances(connections: Dict[str, List[str]]) -> Dict[str, Dict[str, int]]:
     return {
         vert: {
             other: int(dsts[vert_idx][other_idx])
-            for other_idx, other in enumerate(vertices)
+            for other_idx, other in enumerate(vertices) if flow_rate[other] > 0
         }
         for (vert_idx, vert) in enumerate(vertices)
     }
@@ -95,7 +95,7 @@ def visit(
         if (
             flow_rate[possible_new_valve] > 0
             and (not valve_on[possible_new_valve])
-            and distances[position][possible_new_valve] + 1 <= new_time_left
+            and distances[position][possible_new_valve] + 2 <= new_time_left
         )
     ]:
         max_release_if_we_go_this_way = visit(
@@ -116,7 +116,7 @@ def visit(
 
 def part1(fn: str) -> int:
     (flow_rate, valve_on, connections) = parse_cave(fn)
-    dsts = distances(connections)
+    dsts = distances(connections, flow_rate)
     return visit("AA", flow_rate, valve_on, dsts)
 
 
@@ -174,7 +174,7 @@ def visit2(
             if (
                 flow_rate[possible_new_valve] > 0  # No reason to go to a place where's no valve
                 and (not valve_on[possible_new_valve])  # The valve is not on yet
-                and distances[pos1][possible_new_valve] + 1
+                and distances[pos1][possible_new_valve] + 2
                 <= new_at1  # We have time to get there, and open the valve
             )
         ]
@@ -188,7 +188,7 @@ def visit2(
                 if (
                     flow_rate[possible_new_valve] > 0
                     and (not valve_on[possible_new_valve])
-                    and distances[pos2][possible_new_valve] + 1 <= new_at2
+                    and distances[pos2][possible_new_valve] + 2 <= new_at2
                 )
             ]
             if step_of_2()
@@ -229,7 +229,7 @@ def visit2(
 
 def part2(fn: str) -> int:
     (flow_rate, valve_on, connections) = parse_cave(fn)
-    dsts = distances(connections)
+    dsts = distances(connections, flow_rate)
     return visit2(("AA", 26), ("AA", 26), flow_rate, valve_on, dsts)
 
 
