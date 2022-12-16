@@ -15,6 +15,9 @@ class Point:
     def move(self, dx: int = 0, dy: int = 0) -> "Point":
         return Point(self.x + dx, self.y + dy)
 
+    def distance(self, other: "Point") -> int:
+        return abs(self.x - other.x) + abs(self.y - other.y)
+
 
 class HorizontalOrVerticalLine:
     low: Point
