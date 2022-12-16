@@ -61,56 +61,82 @@ def distances(cave: Dict[str, Valve]) -> Dict[str, Dict[str, int]]:
                 if dsts[i][j] > dsts[i][k] + dsts[k][j]:
                     dsts[i][j] = dsts[i][k] + dsts[k][j]
 
-    return { vert: { other: int(dsts[vert_idx][other_idx]) for other_idx, other in enumerate(vertices) } for (vert_idx, vert) in enumerate(vertices) }
+    return {
+        vert: {
+            other: int(dsts[vert_idx][other_idx])
+            for other_idx, other in enumerate(vertices)
+        }
+        for (vert_idx, vert) in enumerate(vertices)
+    }
 
 
-def benefits(cave: Dict[str, Valve], time_left: int = 30):
+def release_from_valve(valve: Valve, time_left: int):
+    return valve.flow_rate * time_left if not valve.on else 0
+
+
+def cost_benefit_of_going_to_X_and_opening_valve(
+    curr_pos: str,
+    dest_pos: str,
+    distances: Dict[str, Dict[str, int]],
+    valves: Dict[str, Valve],
+    time_left: int,
+) -> Tuple[int, int]:  # time it takes and release
+    time_it_takes = distances[curr_pos][dest_pos] + 1  # opening the valve
+    release = release_from_valve(valves[dest_pos], time_left - time_it_takes)
+    return (time_it_takes, release)
+
+
+def cost_benefit_of_going_to_X_and_opening_valves(
+    curr_pos: str,
+    distances: Dict[str, Dict[str, int]],
+    valves: Dict[str, Valve],
+    time_left: int = 30,
+):
 
     return {
-        vert: ((time_left - 1) * cave[vert].flow_rate)
-        if time_left > 1 and not cave[vert].on
-        else 0
-        for vert in sorted(cave.keys())
+        dest_pos: cost_benefit_of_going_to_X_and_opening_valve(
+            curr_pos, dest_pos, distances, valves, time_left
+        )
+        for dest_pos in sorted(valves.keys())
     }
 
 
 def part1(fn: str) -> int:
-    caves = parse_cave(fn)
-    dsts = distances(caves)
+    valves = parse_cave(fn)
+    dsts = distances(valves)
     print(dsts)
 
     time_left = 30
     curr_pos = "AA"
-    assert curr_pos in caves.keys()
+    assert curr_pos in valves.keys()
 
     released = 0
 
-    if caves["AA"].flow_rate > 0:
+    if valves["AA"].flow_rate > 0:
         # Open valve in AA
         time_left -= 1
-        released = benefits(caves)["AA"]
-        caves["AA"].on = True
+        released = release_from_valve(valves["AA"], time_left)
+        valves["AA"].on = True
 
     while time_left > 0:
         print(f"In {curr_pos}, time left: {time_left}")
-        bnfts = benefits(caves, time_left)
-        print(f"Benefits: {bnfts}")
-        costs = dsts[curr_pos]
 
-        benefit_cost = { vert: bc if bc >0 else 0 for vert, bc in { vert: (bnfts[vert] - costs[vert]) for vert in caves.keys() }.items()}
+        benefit_cost = cost_benefit_of_going_to_X_and_opening_valves(
+            curr_pos, dsts, valves, time_left
+        )
         print(f"Benefit - cost: {benefit_cost}")
 
-        next_pos = max(benefit_cost, key=benefit_cost.get)
+        # TODO backtrack!
+        next_pos = max(benefit_cost, key=lambda k: benefit_cost.get(k)[1])
         print(f"Max benefit next: {next_pos}")
 
         # move to next pos
-        time_left -= costs[next_pos]
+        time_left -= benefit_cost[next_pos][0]
         curr_pos = next_pos
 
         # open valve in next pos
-        caves[next_pos].on = True
-        time_left -= 1
-        released += bnfts[next_pos]
+        valves[next_pos].on = True
+        released += benefit_cost[next_pos][1]
 
     return released
 
@@ -120,6 +146,6 @@ def part2(fn: str) -> int:
 
 
 print(f"Part1 Sample: {part1('day16/sample')}")
-print(f"Part1: {part1('day16/input')}")
+# print(f"Part1: {part1('day16/input')}")
 # print(f"Part2 Sample: {part2('day16/sample')}")
 # print(f"Part2: {part2('day16/input')}")
