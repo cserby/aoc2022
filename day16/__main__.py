@@ -1,11 +1,10 @@
 import copy
 import math
 import re
-from dataclasses import dataclass, field
-from typing import Dict, Generator, Iterator, List, Optional, Set, Tuple
+from typing import Dict, List, Tuple
 
 from utils import file_lines
-from utils.matrix import matrix_of_size, matrix_to_str
+from utils.matrix import matrix_of_size
 
 
 def parse_cave(fn: str) -> Tuple[Dict[str, int], Dict[str, bool], Dict[str, List[str]]]:
@@ -75,25 +74,18 @@ def visit(
     flow_rate: Dict[str, int],
     valve_on: Dict[str, bool],
     distances: Dict[str, Dict[str, int]],
-    released_so_far: int = 0,
     time_left: int = 30,
     indent: int = 0,
 ) -> int:
-    #    print(" " * indent + f"{valve.id} IN (time_left = {time_left})")
     new_time_left = time_left
-    new_released_so_far = released_so_far
+    released_if_we_take_this_route = 0
 
     if flow_rate[position] > 0:
-        #        print(" " * indent + f"{valve.id} VISIT")
         # open valve
         new_time_left -= 1
         assert not valve_on[position]
-        curr_release = (flow_rate[position] * new_time_left)
-        #        print(
-        #            " " * indent
-        #            + f"{valve.id} will release {curr_release} until time runs out in {new_time_left}"
-        #        )
-        new_released_so_far += curr_release
+        curr_release = flow_rate[position] * new_time_left
+        released_if_we_take_this_route += curr_release
         valve_on[position] = True
 
     max_release = None
@@ -106,35 +98,25 @@ def visit(
             and distances[position][possible_new_valve] + 1 <= new_time_left
         )
     ]:
-        #        print(
-        #            " " * indent
-        #            + f"{valve.id} TRAVERSE TO {new_valve} in {distances[valve.id][new_valve]}"
-        #        )
-
         max_release_if_we_go_this_way = visit(
             new_position,
             flow_rate,
             copy.deepcopy(valve_on),
             distances,
-            0,
             new_time_left - distances[position][new_position],
             indent + 2,
         )
         if max_release is None or max_release_if_we_go_this_way > max_release:
             max_release = max_release_if_we_go_this_way
     if max_release is not None:
-        new_released_so_far += max_release
+        released_if_we_take_this_route += max_release
 
-    #    print(" " * indent + f"{valve.id} EXIT ({new_released_so_far})")
-    return new_released_so_far
+    return released_if_we_take_this_route
 
 
 def part1(fn: str) -> int:
     (flow_rate, valve_on, connections) = parse_cave(fn)
     dsts = distances(connections)
-
-    # print(dsts)
-
     return visit("AA", flow_rate, valve_on, dsts)
 
 
