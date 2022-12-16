@@ -1,3 +1,4 @@
+import copy
 import math
 import re
 from dataclasses import dataclass, field
@@ -74,71 +75,70 @@ def release_from_valve(valve: Valve, time_left: int):
     return valve.flow_rate * time_left if not valve.on else 0
 
 
-def cost_benefit_of_going_to_X_and_opening_valve(
-    curr_pos: str,
-    dest_pos: str,
-    distances: Dict[str, Dict[str, int]],
+def visit(
+    valve: Valve,
     valves: Dict[str, Valve],
-    time_left: int,
-) -> Tuple[int, int]:  # time it takes and release
-    time_it_takes = distances[curr_pos][dest_pos] + 1  # opening the valve
-    release = release_from_valve(valves[dest_pos], time_left - time_it_takes)
-    return (time_it_takes, release)
-
-
-def cost_benefit_of_going_to_X_and_opening_valves(
-    curr_pos: str,
     distances: Dict[str, Dict[str, int]],
-    valves: Dict[str, Valve],
+    released_so_far: int = 0,
     time_left: int = 30,
-):
+    indent: int = 0,
+) -> int:
+#    print(" " * indent + f"{valve.id} IN (time_left = {time_left})")
+    new_time_left = time_left
+    new_released_so_far = released_so_far
 
-    return {
-        dest_pos: cost_benefit_of_going_to_X_and_opening_valve(
-            curr_pos, dest_pos, distances, valves, time_left
+    if valve.flow_rate > 0:
+#        print(" " * indent + f"{valve.id} VISIT")
+        # open valve
+        new_time_left -= 1
+        curr_release = release_from_valve(valve, new_time_left)
+#        print(
+#            " " * indent
+#            + f"{valve.id} will release {curr_release} until time runs out in {new_time_left}"
+#        )
+        new_released_so_far += curr_release
+        valve.on = True
+
+    max_release = None
+    for new_valve in [
+        possible_new_valve
+        for possible_new_valve in distances[valve.id].keys()
+        if (
+            valves[possible_new_valve].flow_rate > 0
+            and (not valves[possible_new_valve].on)
+            and distances[valve.id][possible_new_valve] + 1 <= new_time_left
         )
-        for dest_pos in sorted(valves.keys())
-    }
+    ]:
+#        print(
+#            " " * indent
+#            + f"{valve.id} TRAVERSE TO {new_valve} in {distances[valve.id][new_valve]}"
+#        )
+
+        new_valves = copy.deepcopy(valves)
+        max_release_if_we_go_this_way = visit(
+            new_valves[new_valve],
+            new_valves,
+            distances,
+            0,
+            new_time_left - distances[valve.id][new_valve],
+            indent + 2,
+        )
+        if max_release is None or max_release_if_we_go_this_way > max_release:
+            max_release = max_release_if_we_go_this_way
+    if max_release is not None:
+        new_released_so_far += max_release
+
+#    print(" " * indent + f"{valve.id} EXIT ({new_released_so_far})")
+    return new_released_so_far
 
 
 def part1(fn: str) -> int:
     valves = parse_cave(fn)
     dsts = distances(valves)
-    print(dsts)
 
-    time_left = 30
-    curr_pos = "AA"
-    assert curr_pos in valves.keys()
+    #print(dsts)
 
-    released = 0
-
-    if valves["AA"].flow_rate > 0:
-        # Open valve in AA
-        time_left -= 1
-        released = release_from_valve(valves["AA"], time_left)
-        valves["AA"].on = True
-
-    while time_left > 0:
-        print(f"In {curr_pos}, time left: {time_left}")
-
-        benefit_cost = cost_benefit_of_going_to_X_and_opening_valves(
-            curr_pos, dsts, valves, time_left
-        )
-        print(f"Benefit - cost: {benefit_cost}")
-
-        # TODO backtrack!
-        next_pos = max(benefit_cost, key=lambda k: benefit_cost.get(k)[1])
-        print(f"Max benefit next: {next_pos}")
-
-        # move to next pos
-        time_left -= benefit_cost[next_pos][0]
-        curr_pos = next_pos
-
-        # open valve in next pos
-        valves[next_pos].on = True
-        released += benefit_cost[next_pos][1]
-
-    return released
+    return visit(valves["AA"], valves, dsts)
 
 
 def part2(fn: str) -> int:
@@ -146,6 +146,6 @@ def part2(fn: str) -> int:
 
 
 print(f"Part1 Sample: {part1('day16/sample')}")
-# print(f"Part1: {part1('day16/input')}")
+print(f"Part1: {part1('day16/input')}")
 # print(f"Part2 Sample: {part2('day16/sample')}")
 # print(f"Part2: {part2('day16/input')}")

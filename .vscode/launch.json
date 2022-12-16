@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
 
+
         {
             "name": "Day8",
             "type": "python",
@@ -38,6 +39,13 @@
             "type": "python",
             "request": "launch",
             "module": "day15",
+            "justMyCode": true
+        },
+        {
+            "name": "Day16",
+            "type": "python",
+            "request": "launch",
+            "module": "day16",
             "justMyCode": true
         }
     ]
