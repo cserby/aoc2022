@@ -149,7 +149,11 @@ def max_release(
             assert not valve_on[pos1]
             valve_on[pos1] = True
             release += flow_rate[pos1] * time_left1
-        new_poses1 = [ pos for pos in distances[pos1].keys() if (pos != pos2) and (not valve_on[pos]) ]
+        new_poses1 = [
+            pos
+            for pos in distances[pos1].keys()
+            if (pos != pos2) and (not valve_on[pos])
+        ]
     else:
         new_poses1 = [pos1]
 
@@ -158,7 +162,11 @@ def max_release(
             assert not valve_on[pos2]
             valve_on[pos2] = True
             release += flow_rate[pos2] * time_left2
-        new_poses2 = [ pos for pos in distances[pos2].keys() if (pos != pos1) and (not valve_on[pos]) ]
+        new_poses2 = [
+            pos
+            for pos in distances[pos2].keys()
+            if (pos != pos1) and (not valve_on[pos])
+        ]
     else:
         new_poses2 = [pos2]
 
@@ -169,8 +177,12 @@ def max_release(
             if new_pos1 == new_pos2:
                 continue
 
-            new_time_left1 = time_left1 - distances[pos1][new_pos1] - (1 if step_of_1() else 0) # Go there, open valve
-            new_time_left2 = time_left2 - distances[pos2][new_pos2] - (1 if step_of_2() else 0)
+            new_time_left1 = (
+                time_left1 - distances[pos1][new_pos1] - (1 if step_of_1() else 0)
+            )  # Go there, open valve
+            new_time_left2 = (
+                time_left2 - distances[pos2][new_pos2] - (1 if step_of_2() else 0)
+            )
 
             new_simulation_time_left = max(new_time_left1, new_time_left2)
 
@@ -182,7 +194,7 @@ def max_release(
                 new_simulation_time_left,
                 flow_rate,
                 valve_on.copy(),
-                distances
+                distances,
             )
 
             if further_max_rel is None or possible_further_max_rel > further_max_rel:
