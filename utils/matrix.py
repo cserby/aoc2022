@@ -51,11 +51,11 @@ def horizontal_vertical_and_diagonal_neighbor_indices(
             yield (x - 1, y + 1)
 
 
-def matrix_to_str(matrix: List[List[Any]]) -> str:
+def matrix_to_str(matrix: List[List[Any]], cell_size: int = 1, sep: str = "|") -> str:
     matrix_str = ""
     for x in range(len(matrix)):
         for y in range(len(matrix[0])):
-            matrix_str += f"{str(matrix[x][y])}"
+            matrix_str += f"{str(matrix[x][y]):>{cell_size}}{sep}"
         matrix_str += "\n"
 
     return matrix_str
