@@ -6,6 +6,7 @@
     "configurations": [
 
 
+
         {
             "name": "Day8",
             "type": "python",
@@ -46,6 +47,13 @@
             "type": "python",
             "request": "launch",
             "module": "day16",
+            "justMyCode": true
+        },
+        {
+            "name": "Day17",
+            "type": "python",
+            "request": "launch",
+            "module": "day17",
             "justMyCode": true
         }
     ]
