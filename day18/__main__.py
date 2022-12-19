@@ -72,10 +72,10 @@ def fill_steam(grid: IntGrid) -> None:
     for x in range(GRID_SIZE):
         for y in range(GRID_SIZE):
             for z in range(GRID_SIZE):
-                if grid[x][y][z] != 0:
-                    continue
-                if any(grid[x1][y1][z1] == 2 for (x1, y1, z1) in neighbors(x, y, z)):
-                    grid[x][y][z] = 2
+                if grid[x][y][z] == 2:
+                    for (n_x, n_y, n_z) in neighbors(x, y, z):
+                        if grid[n_x][n_y][n_z] == 0:
+                            grid[n_x][n_y][n_z] = 2
 
 
 def part2(fn: str) -> int:
