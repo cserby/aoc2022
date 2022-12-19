@@ -1,12 +1,8 @@
-import cProfile
 import enum
-import math
-import re
-from typing import Dict, Generator, List, Optional, Set, Tuple
+from typing import Generator, List, Optional, Set, Tuple
 
 from utils import file_lines
 from utils.geometry import Point
-from utils.matrix import matrix_of_size
 
 
 class JetPush(enum.Enum):
@@ -100,15 +96,15 @@ def drop_rock(rock: Rock, chamber: "Chamber") -> Generator[Rock, JetPush, Rock]:
         while True:
             jet_push = yield (rock)
             rock = rock.move_by_jet(jet_push, chamber)
-            print("Moved by jet")
-            print(chamber.draw(rock))
+            #print("Moved by jet")
+            #print(chamber.draw(rock))
             rock = rock.move_down(chamber)
-            print("Moved down")
-            print(chamber.draw(rock))
+            #print("Moved down")
+            #print(chamber.draw(rock))
     except ComeToRestException:
-        print("Rock came to rest")
+        #print("Rock came to rest")
         chamber.rock_comes_to_rest(rock)
-        print(chamber.draw(rock))
+        #print(chamber.draw(rock))
         return rock
 
 
@@ -141,12 +137,12 @@ class Chamber:
         assert 0 <= y
 
         try:
+            assert y - self.cut_lines >= 0
             return self.columns[x][y - self.cut_lines]
         except IndexError:
             self.columns = [
                 c + [False for _ in range(y - len(c) + 5)] for c in self.columns
             ]
-            self.reduce()
             return False
 
     def safe_set(self, x: int, y: int, value: bool) -> None:
@@ -161,18 +157,22 @@ class Chamber:
             self.safe_set(p.x, p.y, True)
             if self.heights[p.x] < p.y + 1:
                 self.heights[p.x] = p.y + 1
+        if len(self.columns[0]) > 40:
+            self.reduce()
 
     def draw(self, rock: Optional[Rock] = None) -> str:
         string = ""
         for y in range(len(self.columns[0]) - 1, -1, -1):
-            string += "#"
+            string += f"{y:0>2} #"
             for x in range(7):
-                if rock is not None and any(p.x == x and p.y - self.cut_lines == y for p in rock.points):
+                if rock is not None and any(
+                    p.x == x and p.y - self.cut_lines == y for p in rock.points
+                ):
                     string += "@"
                 else:
                     string += "$" if self.columns[x][y] else "."
             string += "#\n"
-        string += "#" * 9
+        string += "#" * 12
         return string
 
     def collision(self, rock: Rock) -> bool:
@@ -180,45 +180,48 @@ class Chamber:
 
     def reduce(self) -> None:
         # Need to find a way across, in a way that I can move up, down, left, or up-left, down-left
-        def find_path_across(start_y: int, start_x: int, cut_height: int, visited: Set[Tuple[int, int]] = set()) -> Optional[int]:
+        def find_path_across(
+            start_y: int,
+            start_x: int,
+            cut_height: int,
+            visited: Set[Tuple[int, int]] = set(),
+        ) -> Optional[int]:
             if start_x >= 7:
                 return cut_height
-            elif not self.columns[start_x][start_y - self.cut_lines]:
-            #elif not self.safe_get(start_x, start_y):
+            elif not self.safe_get(start_x, start_y):
                 return None
             else:
-                for new_start_y in [
-                    start_y - 1,
-                    start_y,
-                    start_y + 1
+                for (new_start_x, new_start_y) in [
+                    (n_x, n_y)
+                    for n_y in [start_y + 1, start_y, start_y - 1]
+                    for n_x in [start_x + 1, start_x]
                 ]:
-                    for new_start_x in [
-                        start_x,
-                        start_x + 1
-                    ]:
-                        if new_start_x == start_x and new_start_y == start_y:
-                            continue
-                        if new_start_y < 0 or new_start_x < 0:
-                            continue
-                        if (new_start_x, new_start_y) in visited:
-                            continue
+                    if new_start_x == start_x and new_start_y == start_y:
+                        continue
+                    if new_start_y < self.cut_lines:
+                        continue
+                    if (new_start_x, new_start_y) in visited:
+                        continue
                     new_cut_height = find_path_across(
                         new_start_y,
-                        start_x + 1,
-                        cut_height if new_start_y < cut_height else new_start_y,
-                        visited | { (start_x, start_y) })
+                        new_start_x,
+                        new_start_y if new_start_y < cut_height else cut_height,
+                        visited | {(start_x, start_y)},
+                    )
 
                     if new_cut_height is not None:
                         return new_cut_height
 
                 return None
 
-        for scan_height in range(self.highest(), 7, -1):
+        for scan_height in range(self.highest() - 1, self.cut_lines - 1, -1):
             cut_height = find_path_across(scan_height, 0, scan_height)
             if cut_height is not None:
-                print(f"Cut at {cut_height}")
-                self.columns = [ c[cut_height - self.cut_lines - 2:] for c in self.columns ]
-                self.cut_lines += cut_height
+                #print(f"Cut at {cut_height}")
+                self.columns = [
+                    c[cut_height - self.cut_lines:] for c in self.columns
+                ]
+                self.cut_lines = cut_height
                 return
 
 
@@ -233,22 +236,29 @@ def part1(fn: str) -> int:
     for _ in range(2002):
         dropping_rock = drop_rock(rock, chamber)
         dr = next(dropping_rock)
-        print("New Rock")
-        print(chamber.draw(dr))
+        ##print("New Rock")
+        ##print(chamber.draw(dr))
         try:
             while True:
                 curr_jet = next(jt)
                 dr = dropping_rock.send(curr_jet)
         except StopIteration:
-            rock = rocks.send(chamber.highest() - chamber.cut_lines)
+            rock = rocks.send(chamber.highest())
     return chamber.highest()
+
+def test():
+    ch = Chamber()
+    ch.rock_comes_to_rest(Rock([Point(x, x + 1) for x in range(7)]))
+    #print(ch.draw())
+    ch.reduce()
+    #print(ch.draw())
+    raise Exception(ch)
 
 
 def part2(fn: str) -> int:
     raise NotImplementedError()
 
-
-#print(f"Part1 Sample: {part1('day17/sample')}")
+print(f"Part1 Sample: {part1('day17/sample')}")
 print(f"Part1: {part1('day17/input')}")
 # (f"Part2 Sample: {part2('day17/sample')}")
-# print(f"Part2: {part2('day17/input')}")
+# #print(f"Part2: {part2('day17/input')}")
