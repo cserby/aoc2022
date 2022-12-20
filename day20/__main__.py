@@ -37,8 +37,8 @@ class Elem:
     def to_list(self) -> List[int]:
         return [e.value for e in iter(self)]
 
-    def to_dict(self) -> Dict[int, "Elem"]:
-        return {e.value: e for e in iter(self)}
+    def to_elem_list(self) -> List["Elem"]:
+        return [e for e in iter(self)]
 
     def __iter__(self) -> ElemIterator:
         return ElemIterator(self)
@@ -104,13 +104,18 @@ class Elem:
 
 def part1(fn: str) -> int:
     ring = Elem.from_file(fn)
-    lookup = ring.to_dict()
+    orig_order = ring.to_elem_list()
+    zero: Optional[Elem] = None
 
-    for l in file_lines(fn):
-        val = int(l)
-        lookup[val].mix()
+    for e in orig_order:
+        e.mix()
+        if e.value == 0:
+            zero = e
 
-    return sum([lookup[0].nth(n).value for n in [1000, 2000, 3000]])
+    assert zero is not None
+    groove_coords = [zero.nth(n).value for n in [1000, 2000, 3000]]
+    print(groove_coords)
+    return sum(groove_coords)
 
 
 def part2(fn: str) -> int:
