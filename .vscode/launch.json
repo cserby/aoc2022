@@ -7,6 +7,7 @@
 
 
 
+
         {
             "name": "Day8",
             "type": "python",
@@ -54,6 +55,13 @@
             "type": "python",
             "request": "launch",
             "module": "day17",
+            "justMyCode": true
+        },
+        {
+            "name": "Day20",
+            "type": "python",
+            "request": "launch",
+            "module": "day20",
             "justMyCode": true
         }
     ]
