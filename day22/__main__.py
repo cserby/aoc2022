@@ -119,20 +119,20 @@ class Maze:
             raise WrapAroundVerticallyToTheBottomException(col) from e
 
     def move(self, position: Tuple[int, int], direction: Direction) -> Tuple[int, int]:
-        (from_row, from_col) = position
+        (row, col) = position
         match direction:
             case Direction.right:
-                new_row = from_row
-                new_col = from_col + 1
+                new_row = row
+                new_col = col + 1
             case Direction.up:
-                new_row = from_row - 1
-                new_col = from_col
+                new_row = row - 1
+                new_col = col
             case Direction.left:
-                new_row = from_row
-                new_col = from_col - 1
+                new_row = row
+                new_col = col - 1
             case Direction.down:
-                new_row = from_row + 1
-                new_col = from_col
+                new_row = row + 1
+                new_col = col
         try:
             c = self.cell((new_row, new_col))
             match c:
