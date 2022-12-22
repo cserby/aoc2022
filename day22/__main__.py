@@ -44,28 +44,14 @@ class Maze:
         self._maze = [[MazeCell(c) for c in l] for l in lines]
 
     def first_cell_from_left(self, row: int) -> Tuple[Tuple[int, int], MazeCell]:
-        pos = (
-            row,
-            next(
-                col
-                for col, c in enumerate(self._maze[row - 1], 1)
-                if c != MazeCell.void
-            ),
-        )
-        return (pos, self.cell(pos))
+        (col, c) = next((col, c) for col, c in enumerate(self._maze[row - 1], 1) if c != MazeCell.void)
+
+        return ((row, col), c)
 
     def first_cell_from_right(self, row: int) -> Tuple[Tuple[int, int], MazeCell]:
-        pos = (
-            row,
-            list(
-                (
-                    col
-                    for col, c in enumerate(self._maze[row - 1], 1)
-                    if c != MazeCell.void
-                )
-            )[-1],
-        )
-        return (pos, self.cell(pos))
+        (col, c) = list((col, c) for col, c in enumerate(self._maze[row - 1], 1) if c != MazeCell.void)[-1]
+
+        return ((row, col), c)
 
     def col(self, col: int) -> List[MazeCell]:
         assert col > 0
@@ -305,7 +291,7 @@ def part2(fn: str) -> int:
     raise NotImplementedError()
 
 
-print(f"Part1 Sample: {part1('day22/sample')}")
+#print(f"Part1 Sample: {part1('day22/sample')}")
 print(f"Part1: {part1('day22/input')}")
 # print(f"Part2 Sample: {part2('day22/sample')}")
 # print(f"Part2: {part2('day22/input')}")
