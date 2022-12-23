@@ -44,11 +44,13 @@ class Maze:
         self._maze = [[MazeCell(c) for c in l] for l in lines]
 
     def first_cell_from_left(self, row: int) -> Tuple[Tuple[int, int], MazeCell]:
+        assert row > 0
         (col, c) = next((col, c) for col, c in enumerate(self._maze[row - 1], 1) if c != MazeCell.void)
 
         return ((row, col), c)
 
     def first_cell_from_right(self, row: int) -> Tuple[Tuple[int, int], MazeCell]:
+        assert row > 0
         (col, c) = list((col, c) for col, c in enumerate(self._maze[row - 1], 1) if c != MazeCell.void)[-1]
 
         return ((row, col), c)
