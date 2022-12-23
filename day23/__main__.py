@@ -1,9 +1,10 @@
 from collections import defaultdict
 from enum import Enum
-from typing import Callable, Dict, Generator, Iterator, List, Optional, Set, Tuple
+from typing import Dict, Generator, List, Set, Tuple
 
 from utils import file_lines
-from utils.geometry import Point, draw_coordinates
+
+# from utils.geometry import Point, draw_coordinates
 
 
 class Direction(Enum):
@@ -94,11 +95,18 @@ def proposals(
     return proposals
 
 
+class NoElvesWillMoveException(Exception):
+    pass
+
+
 def round(
     field: Set[Tuple[int, int]], move_direction: Generator[List[Direction], None, None]
 ) -> Set[Tuple[int, int]]:
     props = proposals(field, move_direction)
     props_no_dups = {k: v for k, v in props.items() if len(v) == 1}
+
+    if not props_no_dups:
+        raise NoElvesWillMoveException(props)
 
     new_field = field.copy()
 
@@ -108,15 +116,17 @@ def round(
 
     return new_field
 
+
 def empty_fields(field: Set[Tuple[int, int]]) -> int:
-    x_s = { x for (x, _) in field }
+    x_s = {x for (x, _) in field}
     min_x = min(x_s)
     max_x = max(x_s)
-    y_s = { y for (_, y) in field }
+    y_s = {y for (_, y) in field}
     min_y = min(y_s)
     max_y = max(y_s)
 
     return (max_x - min_x + 1) * (max_y - min_y + 1) - len(field)
+
 
 def part1(fn: str) -> int:
     field: Set[Tuple[int, int]] = set(parse_field(fn))
@@ -131,11 +141,24 @@ def part1(fn: str) -> int:
     return empty_fields(field)
 
 
-def part2(fn: str) -> float:
-    raise NotImplementedError()
+def part2(fn: str) -> int:
+    field: Set[Tuple[int, int]] = set(parse_field(fn))
+
+    directions = move_directions()
+
+    r = 1
+
+    try:
+        while True:
+            field = round(field, directions)
+            r += 1
+    except NoElvesWillMoveException:
+        pass
+
+    return r
 
 
 print(f"Part1 Sample: {part1('day23/sample')}")
 print(f"Part1: {part1('day23/input')}")
-# print(f"Part2 Sample: {part2('day23/sample')}")
-# print(f"Part2: {part2('day23/input')}")
+print(f"Part2 Sample: {part2('day23/sample')}")
+print(f"Part2: {part2('day23/input')}")
