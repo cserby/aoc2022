@@ -45,13 +45,21 @@ class Maze:
 
     def first_cell_from_left(self, row: int) -> Tuple[Tuple[int, int], MazeCell]:
         assert row > 0
-        (col, c) = next((col, c) for col, c in enumerate(self._maze[row - 1], 1) if c != MazeCell.void)
+        (col, c) = next(
+            (col, c)
+            for col, c in enumerate(self._maze[row - 1], 1)
+            if c != MazeCell.void
+        )
 
         return ((row, col), c)
 
     def first_cell_from_right(self, row: int) -> Tuple[Tuple[int, int], MazeCell]:
         assert row > 0
-        (col, c) = list((col, c) for col, c in enumerate(self._maze[row - 1], 1) if c != MazeCell.void)[-1]
+        (col, c) = list(
+            (col, c)
+            for col, c in enumerate(self._maze[row - 1], 1)
+            if c != MazeCell.void
+        )[-1]
 
         return ((row, col), c)
 
@@ -91,20 +99,13 @@ class Maze:
         """
 
         (row, col) = pos
-        if row <= 0:
-            raise WrapAroundVerticallyToTheTopException(row)
-
-        if col <= 0:
-            raise WrapAroundHorizontallyToTheLeftException(col)
+        if row <= 0 or col <= 0:
+            return MazeCell.void
 
         try:
-            curr_row = self._maze[row - 1]
-            try:
-                return curr_row[col - 1]
-            except IndexError as e:
-                raise WrapAroundHorizontallyToTheRightException(col) from e
-        except IndexError as e:
-            raise WrapAroundVerticallyToTheBottomException(col) from e
+            return self._maze[row - 1][col - 1]
+        except IndexError:
+            return MazeCell.void
 
     def move(self, position: Tuple[int, int], direction: Direction) -> Tuple[int, int]:
         (row, col) = position
@@ -293,7 +294,7 @@ def part2(fn: str) -> int:
     raise NotImplementedError()
 
 
-#print(f"Part1 Sample: {part1('day22/sample')}")
+print(f"Part1 Sample: {part1('day22/sample')}")
 print(f"Part1: {part1('day22/input')}")
 # print(f"Part2 Sample: {part2('day22/sample')}")
 # print(f"Part2: {part2('day22/input')}")
