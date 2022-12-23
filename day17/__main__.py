@@ -4,6 +4,7 @@ from typing import Callable, Generator, List, Optional, Set, Tuple
 
 from utils import file_lines
 from utils.geometry import Point
+import cProfile
 
 
 class JetPush(enum.Enum):
@@ -203,7 +204,7 @@ class Chamber:
 
         for x in range(7):
             fill(fillable, (x, len(fillable[x]) - 1))
-            print(draw_fillable())
+            #print(draw_fillable())
 
         lowest_twos = []
         for l in fillable:
@@ -212,15 +213,15 @@ class Chamber:
             except ValueError:
                 lowest_twos.append(0)
         cut = min(lowest_twos) - 1
-        os.system("clear")
-        print(f"Cut at {cut}")
-        print(self.draw(None))
+        #os.system("clear")
+        #print(f"Cut at {cut}")
+        #print(self.draw(None))
         #input()
         if cut > 0:
             self.columns = [ c[cut:] for c in self.columns ]
             self.offset += cut
-        print(f"Cut done at {cut}")
-        print(self.draw(None))
+        #print(f"Cut done at {cut}")
+        #print(self.draw(None))
 
     def drop_rock(self, rock: Rock) -> None:
         try:
@@ -237,10 +238,10 @@ class Chamber:
                 #print(self.draw(rock))
                 #input()
         except ComeToRestException:
-            os.system("clear")
-            print("Rock came to rest")
+            #os.system("clear")
+            #print("Rock came to rest")
             self.rock_comes_to_rest(rock)
-            print(self.draw(rock))
+            #print(self.draw(rock))
             #input()
 
 
@@ -257,10 +258,18 @@ def part1(fn: str) -> int:
 
 
 def part2(fn: str) -> int:
-    raise NotImplementedError()
+    chamber = Chamber(jet(next(file_lines(fn))))
+
+    for _ in range(1000000000000):
+        rock = next(chamber.rock_gen)(chamber.highest())
+        #os.system("clear")
+        #print(f"New rock: {rock}")
+        #print(chamber.draw(rock))
+        chamber.drop_rock(rock)
+    return chamber.highest()
 
 
 print(f"Part1 Sample: {part1('day17/sample')}")
-# print(f"Part1: {part1('day17/input')}")
-# (f"Part2 Sample: {part2('day17/sample')}")
-# #print(f"Part2: {part2('day17/input')}")
+print(f"Part1: {part1('day17/input')}")
+print(f"Part2 Sample: {part2('day17/sample')}")
+print(f"Part2: {part2('day17/input')}")")
