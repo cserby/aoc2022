@@ -107,7 +107,9 @@ class Maze:
         except IndexError:
             return MazeCell.void
 
-    def move(self, position: Tuple[int, int], direction: Direction) -> Tuple[int, int]:
+    def move(
+        self, position: Tuple[int, int], direction: Direction
+    ) -> Tuple[Tuple[int, int], Direction]:
         (row, col) = position
         match direction:
             case Direction.right:
@@ -126,32 +128,34 @@ class Maze:
         c = self.cell((new_row, new_col))
         match c:
             case MazeCell.open:
-                return (new_row, new_col)
+                return ((new_row, new_col), direction)
             case MazeCell.wall:
                 raise HitAWallException((new_row, new_col))
             case MazeCell.void:
-                (pos, cell) = self.teleport((new_row, new_col), direction)
+                ((pos, cell), new_direction) = self.teleport(
+                    (new_row, new_col), direction
+                )
                 match cell:
                     case MazeCell.wall:
                         raise HitAWallException(pos)
                     case MazeCell.open:
-                        return pos
+                        return (pos, new_direction)
                     case _:
                         assert False
 
     def teleport(
         self, new_pos: Tuple[int, int], direction: Direction
-    ) -> Tuple[Tuple[int, int], MazeCell]:
+    ) -> Tuple[Tuple[Tuple[int, int], MazeCell], Direction]:
         (new_row, new_col) = new_pos
         match direction:
             case Direction.right:
-                return self.first_cell_from_left(new_row)
+                return (self.first_cell_from_left(new_row), direction)
             case Direction.up:
-                return self.first_cell_from_bottom(new_col)
+                return (self.first_cell_from_bottom(new_col), direction)
             case Direction.left:
-                return self.first_cell_from_right(new_row)
+                return (self.first_cell_from_right(new_row), direction)
             case Direction.down:
-                return self.first_cell_from_top(new_col)
+                return (self.first_cell_from_top(new_col), direction)
             case _:
                 assert False
 
@@ -191,7 +195,9 @@ class Me:
     def move_forward(self, steps: int, maze: Maze) -> None:
         try:
             for _ in range(steps):
-                self.position = maze.move(self.position, self.direction)
+                (self.position, self.direction) = maze.move(
+                    self.position, self.direction
+                )
         except HitAWallException:
             pass
 
@@ -260,22 +266,168 @@ def part1(fn: str) -> int:
     me = Me(*maze.start_cell())
 
     for instr in instructions(input_lines[-1]):
-        print(f"Instruction: {instr}")
+        # print(f"Instruction: {instr}")
         match instr:
             case int():
                 me.move_forward(instr, maze)
             case str():
                 me.turn(instr)
-        print(f"After instruction '{instr}':\n{maze.to_string(me)}")
+        # print(f"After instruction '{instr}':\n{maze.to_string(me)}")
 
     return me.password()
 
 
+class MazeCube(Maze):
+    def teleport(
+        self, from_pos: Tuple[int, int], direction: Direction
+    ) -> Tuple[Tuple[Tuple[int, int], MazeCell], Direction]:
+        (row, col) = from_pos
+
+        match direction:
+            case Direction.left:
+                if col == 50 and 1 <= row <= 50:
+                    new_row = 100 + (51 - row)
+                    new_col = 1
+                    new_direction = Direction.right
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif col == 50 and 51 <= row <= 100:
+                    new_row = 101
+                    new_col = row - 50
+                    new_direction = Direction.down
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif col == 0 and 101 <= row <= 150:
+                    new_row = 100 + 51 - row
+                    new_col = 51
+                    new_direction = Direction.right
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif col == 0 and 151 <= row <= 200:
+                    new_row = 1
+                    new_col = row - 100
+                    new_direction = Direction.down
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                else:
+                    assert False
+            case Direction.up:
+                if row == 100 and 1 <= col <= 50:
+                    new_col = 51
+                    new_row = col + 50
+                    new_direction = Direction.right
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif row == 0 and 51 <= col <= 100:
+                    new_col = 1
+                    new_row = col + 100
+                    new_direction = Direction.right
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif row == 0 and 101 <= col <= 150:
+                    new_direction = Direction.up
+                    new_row = 200
+                    new_col = col - 100
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                else:
+                    assert False
+            case Direction.right:
+                if col == 151 and 1 <= row <= 50:
+                    new_row = 151 - row
+                    new_col = 100
+                    new_direction = Direction.left
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif col == 101 and 51 <= row <= 100:
+                    new_row = 50
+                    new_col = row + 50
+                    new_direction = Direction.up
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif col == 101 and 101 <= row <= 150:
+                    new_row = 151 - row
+                    new_col = 150
+                    new_direction = Direction.left
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif col == 51 and 151 <= row <= 200:
+                    new_row = 150
+                    new_col = row - 100
+                    new_direction = Direction.up
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                else:
+                    assert False
+            case Direction.down:
+                if row == 201 and 1 <= col <= 50:
+                    new_row = 1
+                    new_col = col + 100  # ?
+                    new_direction = Direction.down
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif row == 151 and 51 <= col <= 100:
+                    new_row = col + 100
+                    new_col = 50
+                    new_direction = Direction.left
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                elif row == 51 and 101 <= col <= 150:
+                    new_row = col - 50
+                    new_col = 100
+                    new_direction = Direction.left
+                    return (
+                        ((new_row, new_col), self.cell((new_row, new_col))),
+                        new_direction,
+                    )
+                else:
+                    assert False
+
+
 def part2(fn: str) -> int:
-    raise NotImplementedError()
+    input_lines = list(file_lines(fn))
+    maze = MazeCube(input_lines[:-2])
+    me = Me(*maze.start_cell())
+
+    for instr in instructions(input_lines[-1]):
+        # print(f"Instruction: {instr}")
+        match instr:
+            case int():
+                me.move_forward(instr, maze)
+            case str():
+                me.turn(instr)
+        # print(f"After instruction '{instr}':\n{maze.to_string(me)}")
+
+    return me.password()
 
 
 print(f"Part1 Sample: {part1('day22/sample')}")
 print(f"Part1: {part1('day22/input')}")
 # print(f"Part2 Sample: {part2('day22/sample')}")
-# print(f"Part2: {part2('day22/input')}")
+print(f"Part2: {part2('day22/input')}")
