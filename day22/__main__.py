@@ -122,57 +122,38 @@ class Maze:
             case Direction.down:
                 new_row = row + 1
                 new_col = col
-        try:
-            c = self.cell((new_row, new_col))
-            match c:
-                case MazeCell.open:
-                    return (new_row, new_col)
-                case MazeCell.wall:
-                    raise HitAWallException((new_row, new_col))
-                case MazeCell.void:
-                    match direction:
-                        case Direction.right:
-                            raise WrapAroundHorizontallyToTheRightException()
-                        case Direction.up:
-                            raise WrapAroundVerticallyToTheTopException()
-                        case Direction.left:
-                            raise WrapAroundHorizontallyToTheLeftException()
-                        case Direction.down:
-                            raise WrapAroundVerticallyToTheBottomException()
-        except WrapAroundHorizontallyToTheRightException:
-            (pos, cell) = self.first_cell_from_left(new_row)
-            match cell:
-                case MazeCell.wall:
-                    raise HitAWallException(pos)
-                case MazeCell.open:
-                    return pos
-            assert False
-        except WrapAroundHorizontallyToTheLeftException:
-            (pos, cell) = self.first_cell_from_right(new_row)
-            match cell:
-                case MazeCell.wall:
-                    raise HitAWallException(pos)
-                case MazeCell.open:
-                    return pos
-            assert False
-        except WrapAroundVerticallyToTheBottomException:
-            (pos, cell) = self.first_cell_from_top(new_col)
-            match cell:
-                case MazeCell.wall:
-                    raise HitAWallException(pos)
-                case MazeCell.open:
-                    return pos
-            assert False
-        except WrapAroundVerticallyToTheTopException:
-            (pos, cell) = self.first_cell_from_bottom(new_col)
-            match cell:
-                case MazeCell.wall:
-                    raise HitAWallException(pos)
-                case MazeCell.open:
-                    return pos
-            assert False
-        except HitAWallException:
-            raise
+
+        c = self.cell((new_row, new_col))
+        match c:
+            case MazeCell.open:
+                return (new_row, new_col)
+            case MazeCell.wall:
+                raise HitAWallException((new_row, new_col))
+            case MazeCell.void:
+                (pos, cell) = self.teleport((new_row, new_col), direction)
+                match cell:
+                    case MazeCell.wall:
+                        raise HitAWallException(pos)
+                    case MazeCell.open:
+                        return pos
+                    case _:
+                        assert False
+
+    def teleport(
+        self, new_pos: Tuple[int, int], direction: Direction
+    ) -> Tuple[Tuple[int, int], MazeCell]:
+        (new_row, new_col) = new_pos
+        match direction:
+            case Direction.right:
+                return self.first_cell_from_left(new_row)
+            case Direction.up:
+                return self.first_cell_from_bottom(new_col)
+            case Direction.left:
+                return self.first_cell_from_right(new_row)
+            case Direction.down:
+                return self.first_cell_from_top(new_col)
+            case _:
+                assert False
 
     def to_string(self, me: Optional["Me"]) -> str:
         string = ""
