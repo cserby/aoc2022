@@ -4,7 +4,7 @@ from utils import file_lines
 
 Grid = List[List[List[bool]]]
 
-GRID_SIZE = 21
+GRID_SIZE = 30
 
 
 def neighbors(x: int, y: int, z: int) -> Generator[Tuple[int, int, int], None, None]:
@@ -57,9 +57,9 @@ def parse(fn: str) -> IntGrid:
     for line in file_lines(fn):
         (x, y, z) = [int(c) for c in line.split(",")]
 
-        assert grid[x][y][z] == 0
+        assert grid[x + 2][y + 2][z + 2] == 0
 
-        grid[x][y][z] = 1
+        grid[x + 2][y + 2][z + 2] = 1
 
     return grid
 
@@ -69,13 +69,14 @@ def fill_steam(grid: IntGrid) -> None:
 
     grid[0][0][0] = 2
 
-    for x in range(GRID_SIZE):
-        for y in range(GRID_SIZE):
-            for z in range(GRID_SIZE):
-                if grid[x][y][z] == 2:
-                    for (n_x, n_y, n_z) in neighbors(x, y, z):
-                        if grid[n_x][n_y][n_z] == 0:
-                            grid[n_x][n_y][n_z] = 2
+    for _ in range(50):
+        for x in range(GRID_SIZE):
+            for y in range(GRID_SIZE):
+                for z in range(GRID_SIZE):
+                    if grid[x][y][z] == 2:
+                        for (n_x, n_y, n_z) in neighbors(x, y, z):
+                            if grid[n_x][n_y][n_z] == 0:
+                                grid[n_x][n_y][n_z] = 2
 
 
 def part2(fn: str) -> int:
@@ -98,8 +99,8 @@ def part2(fn: str) -> int:
     return surface
 
 
-# print(f"Part1 Sample: {part1('day18/sample')}")
-# print(f"Part1: {part1('day18/input')}")
+print(f"Part1 Sample: {part1('day18/sample')}")
+print(f"Part1: {part1('day18/input')}")
 print(f"Part2 Sample: {part2('day18/sample')}")
 # cProfile.run("print(part1('day18/input'))")
 print(f"Part2: {part2('day18/input')}")
