@@ -4,11 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
-
-
-
-
         {
             "name": "Day8",
             "type": "python",
@@ -77,6 +72,13 @@
             "type": "python",
             "request": "launch",
             "module": "day22",
+            "justMyCode": true
+        },
+        {
+            "name": "Day23",
+            "type": "python",
+            "request": "launch",
+            "module": "day23",
             "justMyCode": true
         }
     ]
