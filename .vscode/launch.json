@@ -80,6 +80,13 @@
             "request": "launch",
             "module": "day23",
             "justMyCode": true
+        },
+        {
+            "name": "Day24",
+            "type": "python",
+            "request": "launch",
+            "module": "day24",
+            "justMyCode": true
         }
     ]
 }
