@@ -1,24 +1,27 @@
+import math
 from collections import defaultdict
 from enum import Enum
 from typing import Dict, Generator, List, Set, Tuple
 
 from utils import file_lines
-from utils.matrix import down_of, indices, left_of, matrix_to_str, right_of, up_of
-import math
+from utils.matrix import down_of, indices, left_of, matrix_to_str, right_of, up_of, horizontal_and_vertical_neighbor_indices
 
 # from utils.geometry import Point, draw_coordinates
 
 
-def part1(fn: str) -> int:
-    lines = list(file_lines(fn))
-    # input: 150 (3x5x5x2) x 20 (2x5x2) -> periodicity 3x5x5x2x2 = 300
-    # sample: 6 x 4 -> periodicity 12
-    field_width = len(lines[1]) - 2
-    field_height = len(lines) - 2
-    periodicity = math.lcm(field_width, field_height)
-    field = [[c for c in l[1:-1]] for l in lines[1:-1]]
-    cell_open = [
-        [{n for n in range(periodicity)} for _ in l[1:-1]] for l in lines[1:-1]
+def parse_field(lines: List[str]) -> List[List[str]]:
+    return [[c for c in l[1:-1]] for l in lines[1:-1]]
+
+
+def calc_periodicity(field: List[List[str]]) -> int:
+    return math.lcm(len(field[0]), len(field))
+
+
+def open_timeslots(field: List[List[str]]) -> List[List[Set[int]]]:
+    periodicity = calc_periodicity(field)
+
+    cell_open_at_timeslots = [
+        [{n for n in range(periodicity)} for _ in r] for r in field
     ]
 
     for (x, y) in indices(field):
@@ -26,33 +29,41 @@ def part1(fn: str) -> int:
             case ">":
                 for cell in range(y, y + periodicity):
                     try:
-                        if x == 0 and cell % len(cell_open[x]) == 0:
+                        if x == 0 and cell % len(cell_open_at_timeslots[x]) == 0:
                             print(f"{field[x][y]} {(x, y)} at {cell - y}")
-                        cell_open[x][cell % len(cell_open[x])].remove(cell - y)
+                        cell_open_at_timeslots[x][
+                            cell % len(cell_open_at_timeslots[x])
+                        ].remove(cell - y)
                     except KeyError:
                         pass
             case "v":
                 for row in range(x, x + periodicity):
                     try:
-                        if y == 0 and row % len(cell_open) == 0:
+                        if y == 0 and row % len(cell_open_at_timeslots) == 0:
                             print(f"{field[x][y]} {(x, y)} at {row - x}")
-                        cell_open[row % len(cell_open)][y].remove(row - x)
+                        cell_open_at_timeslots[row % len(cell_open_at_timeslots)][
+                            y
+                        ].remove(row - x)
                     except KeyError:
                         pass
             case "^":
                 for row in range(x, x - periodicity, -1):
                     try:
-                        if y == 0 and abs(row % len(cell_open)) == 0:
+                        if y == 0 and abs(row % len(cell_open_at_timeslots)) == 0:
                             print(f"{field[x][y]} {(x, y)} at {abs(row - x)}")
-                        cell_open[abs(row % len(cell_open))][y].remove(abs(row - x))
+                        cell_open_at_timeslots[abs(row % len(cell_open_at_timeslots))][
+                            y
+                        ].remove(abs(row - x))
                     except KeyError:
                         pass
             case "<":
                 for cell in range(y, y - periodicity, -1):
                     try:
-                        if x == 0 and abs(cell % len(cell_open[x])) == 0:
+                        if x == 0 and abs(cell % len(cell_open_at_timeslots[x])) == 0:
                             print(f"{field[x][y]} {(x, y)} at {abs(cell - y)}")
-                        cell_open[x][abs(cell % len(cell_open[x]))].remove(abs(cell - y))
+                        cell_open_at_timeslots[x][
+                            abs(cell % len(cell_open_at_timeslots[x]))
+                        ].remove(abs(cell - y))
                     except KeyError:
                         pass
             case ".":
@@ -60,7 +71,13 @@ def part1(fn: str) -> int:
             case _:
                 assert False
 
-    print(matrix_to_str(cell_open, cell_size=10))
+    return cell_open_at_timeslots
+
+def part1(fn: str) -> int:
+    lines = list(file_lines(fn))
+    field = parse_field(lines)
+
+    print(matrix_to_str(open_timeslots(field), cell_size=10))
 
     raise NotImplementedError()
 
